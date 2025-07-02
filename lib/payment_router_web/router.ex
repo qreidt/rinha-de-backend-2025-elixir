@@ -5,7 +5,9 @@ defmodule PaymentRouterWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", PaymentRouterWeb do
+  scope "/", PaymentRouterWeb do
     pipe_through :api
+    get "/payments-summary", PaymentController, :index
+    post "/payments", PaymentController, :create
   end
 end
