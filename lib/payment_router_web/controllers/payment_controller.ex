@@ -16,14 +16,24 @@ defmodule PaymentRouterWeb.PaymentController do
   def create(conn, data) do
 
     payment_params = %{
-      "uuid" => data["correlationId"],
-      "amount" => data["amount"]
+      uuid: data["correlationId"],
+      amount: data["amount"]
     }
 
-    with {:ok, %Payment{} = payment} <- Payments.create_payment(payment_params) do
-      conn
-      |> put_status(:created)
-      |> render(:show, payment: payment)
+    case Payments.create_payment(payment_params) do
+      # Payment already exists from cache
+      {:cached, payment} ->
+        conn
+        |> put_status(:ok)
+        |> render(:show, payment: payment)
+
+      # New payment created
+      {:created, payment} ->
+        conn
+        |> put_status(:created)
+        |> render(:show, payment: payment)
+
+      error -> error
     end
   end
 end

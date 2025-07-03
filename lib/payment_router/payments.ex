@@ -24,18 +24,18 @@ defmodule PaymentRouter.Payments do
   @doc """
   Gets a single payment.
 
-  Raises `Ecto.NoResultsError` if the Payment does not exist.
+  Returns nil if the Payment does not exist.
 
   ## Examples
 
-      iex> get_payment!(123)
+      iex> get_payment(123)
       %Payment{}
 
-      iex> get_payment!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_payment(456)
+      ** (nil)
 
   """
-  def get_payment!(id), do: Repo.get!(Payment, id)
+  def get_payment(uuid), do: Repo.get(Payment, uuid)
 
   @doc """
   Creates a payment.
@@ -50,8 +50,25 @@ defmodule PaymentRouter.Payments do
 
   """
   def create_payment(attrs \\ %{}) do
-    %Payment{}
-    |> Payment.changeset(attrs)
-    |> Repo.insert()
+    case get_payment_by_attrs(attrs) do
+      nil -> insert_payment(attrs)
+      payment -> {:cached, payment}
+    end
+  end
+
+  defp get_payment_by_attrs(attrs) do
+    uuid = Map.get(attrs, :uuid)
+    if uuid, do: Repo.get(Payment, uuid), else: nil
+  end
+
+  defp insert_payment(attrs) do
+    result = %Payment{}
+      |> Payment.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, payment} -> {:created, payment}
+      err -> err
+    end
   end
 end
