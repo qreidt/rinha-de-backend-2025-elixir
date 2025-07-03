@@ -2,7 +2,6 @@ defmodule PaymentRouterWeb.PaymentController do
   use PaymentRouterWeb, :controller
 
   alias PaymentRouter.Payments
-  alias PaymentRouter.Payments.Payment
 
   action_fallback PaymentRouterWeb.FallbackController
 

@@ -15,7 +15,8 @@ defmodule PaymentRouter.Application do
       # Start a worker by calling: PaymentRouter.Worker.start_link(arg)
       # {PaymentRouter.Worker, arg},
       # Start to serve requests, typically the last entry
-      PaymentRouterWeb.Endpoint
+      PaymentRouterWeb.Endpoint,
+      PaymentRouter.PaymentsCache,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

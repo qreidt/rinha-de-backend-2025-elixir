@@ -6,6 +6,7 @@ defmodule PaymentRouter.Payments do
   import Ecto.Query, warn: false
   alias PaymentRouter.Repo
 
+  alias PaymentRouter.PaymentsCache
   alias PaymentRouter.Payments.Payment
 
   @doc """
@@ -35,7 +36,16 @@ defmodule PaymentRouter.Payments do
       ** (nil)
 
   """
-  def get_payment(uuid), do: Repo.get(Payment, uuid)
+  def get_payment(uuid) do
+  case PaymentRouter.PaymentsCache.get(uuid) do
+    {:ok, payment} -> payment
+
+    :not_found ->
+      payment = Repo.get(Payment, uuid)
+      if payment, do: PaymentsCache.put(uuid, payment)
+      payment
+  end
+end
 
   @doc """
   Creates a payment.
@@ -58,7 +68,7 @@ defmodule PaymentRouter.Payments do
 
   defp get_payment_by_attrs(attrs) do
     uuid = Map.get(attrs, :uuid)
-    if uuid, do: Repo.get(Payment, uuid), else: nil
+    if uuid, do: get_payment(uuid), else: nil
   end
 
   defp insert_payment(attrs) do
@@ -66,9 +76,10 @@ defmodule PaymentRouter.Payments do
       |> Payment.changeset(attrs)
       |> Repo.insert()
 
-    case result do
-      {:ok, payment} -> {:created, payment}
-      err -> err
+    with {:ok, %Payment{} = payment} <- result do
+      PaymentsCache.put(payment.uuid, payment)
+
+      {:created, payment}
     end
   end
 end
