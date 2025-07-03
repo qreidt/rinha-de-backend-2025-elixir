@@ -3,6 +3,7 @@ defmodule PaymentRouter.PaymentsCache do
   use GenServer
 
   @ttl_ms 10_000
+  @cleanup_frequency_ms 60_000
   @table :payments_cache
 
   # Client API
@@ -63,7 +64,7 @@ defmodule PaymentRouter.PaymentsCache do
   end
 
   defp schedule_cleanup do
-    Process.send_after(self(), :cleanup, @ttl_ms)
+    Process.send_after(self(), :cleanup, @cleanup_frequency_ms)
     nil
   end
 end
