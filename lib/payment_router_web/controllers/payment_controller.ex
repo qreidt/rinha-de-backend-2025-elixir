@@ -16,7 +16,7 @@ defmodule PaymentRouterWeb.PaymentController do
   def create(conn, data) do
 
     payment_params = %{
-      "correlation_id" => data["correlationId"],
+      "uuid" => data["correlationId"],
       "amount" => data["amount"]
     }
 

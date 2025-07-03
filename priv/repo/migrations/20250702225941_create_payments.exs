@@ -2,11 +2,9 @@ defmodule PaymentRouter.Repo.Migrations.CreatePayments do
   use Ecto.Migration
 
   def change do
-    create table(:payments) do
-      add :correlation_id, :uuid
+    create table(:payments, primary_key: false) do
+      add :uuid, :uuid, primary_key: true, autogenerate: false
       add :amount, :decimal
-
-      timestamps(type: :utc_datetime)
     end
   end
 end

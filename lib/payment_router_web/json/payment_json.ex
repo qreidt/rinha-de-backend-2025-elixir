@@ -12,13 +12,12 @@ defmodule PaymentRouterWeb.PaymentJSON do
   Renders a single payment.
   """
   def show(%{payment: payment}) do
-    %{data: data(payment)}
+    data(payment)
   end
 
   defp data(%Payment{} = payment) do
     %{
-      id: payment.id,
-      correlation_id: payment.correlation_id,
+      correlationId: payment.uuid,
       amount: payment.amount
     }
   end
