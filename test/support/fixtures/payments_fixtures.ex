@@ -8,11 +8,11 @@ defmodule PaymentRouter.PaymentsFixtures do
   Generate a payment.
   """
   def payment_fixture(attrs \\ %{}) do
-    {:ok, payment} =
+    {:created, payment} =
       attrs
       |> Enum.into(%{
         amount: "120.5",
-        correlation_id: "7488a646-e31f-11e4-aace-600308960662"
+        uuid: "7488a646-e31f-11e4-aace-600308960662"
       })
       |> PaymentRouter.Payments.create_payment()
 

@@ -6,7 +6,6 @@ defmodule PaymentRouter.Payments do
   import Ecto.Query, warn: false
   alias PaymentRouter.Repo
 
-  alias PaymentRouter.PaymentsCache
   alias PaymentRouter.Payments.Payment
 
   @doc """
@@ -42,7 +41,8 @@ defmodule PaymentRouter.Payments do
 
     :not_found ->
       payment = Repo.get(Payment, uuid)
-      if payment, do: PaymentsCache.put(uuid, payment)
+      cache_service = get_cache_service()
+      if payment, do: cache_service.put(uuid, payment)
       payment
   end
 end
@@ -77,9 +77,16 @@ end
       |> Repo.insert()
 
     with {:ok, %Payment{} = payment} <- result do
-      PaymentsCache.put(payment.uuid, payment)
+      cache_service = get_cache_service()
+      cache_service.put(payment.uuid, payment)
 
       {:created, payment}
     end
+  end
+
+  ## Deps
+
+  defp get_cache_service() do
+    Application.get_env(:payment_router, :cache_service)
   end
 end

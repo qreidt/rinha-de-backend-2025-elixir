@@ -25,3 +25,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Override
+config :payment_router, cache_service: PaymentRouter.PaymentsCacheMock
