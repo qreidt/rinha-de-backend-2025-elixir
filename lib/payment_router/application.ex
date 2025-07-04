@@ -17,6 +17,7 @@ defmodule PaymentRouter.Application do
       # Start to serve requests, typically the last entry
       PaymentRouterWeb.Endpoint,
       PaymentRouter.PaymentsCache,
+      PaymentGateways.Resolver,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
