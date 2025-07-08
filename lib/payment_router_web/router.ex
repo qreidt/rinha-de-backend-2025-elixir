@@ -7,7 +7,9 @@ defmodule PaymentRouterWeb.Router do
 
   scope "/", PaymentRouterWeb do
     pipe_through :api
-    get "/payments-summary", PaymentController, :index
     post "/payments", PaymentController, :create
+    get "/payments-summary", PaymentController, :index
+
+    post "/purge-payments", PaymentController, :purge
   end
 end

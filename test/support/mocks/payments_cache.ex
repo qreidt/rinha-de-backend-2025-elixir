@@ -5,7 +5,7 @@ defmodule PaymentRouter.PaymentsCacheMock do
     :not_found
   end
 
-  @spec put(String.t(), %PaymentRouter.Payments.Payment{}) :: :ok
+  @spec put(String.t(), %PaymentRouter.Payments.AcceptedPayment{}) :: :ok
   def put(_uuid, _payment) do
     :ok
   end

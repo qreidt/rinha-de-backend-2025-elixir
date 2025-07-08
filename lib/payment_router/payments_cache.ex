@@ -2,7 +2,7 @@ defmodule PaymentRouter.PaymentsCache do
   require Logger
   use GenServer
 
-  alias PaymentRouter.Payments.Payment
+  alias PaymentRouter.Payments.AcceptedPayment
 
   @ttl_ms 10_000
   @cleanup_frequency_ms 60_000
@@ -26,8 +26,8 @@ defmodule PaymentRouter.PaymentsCache do
     end
   end
 
-  @spec put(String.t(), %Payment{}) :: :ok
-  def put(uuid, %Payment{} = payment) do
+  @spec put(String.t(), %AcceptedPayment{}) :: :ok
+  def put(uuid, %AcceptedPayment{} = payment) do
     :ets.insert(@table, {uuid, payment, now_ms()})
     Logger.info("Cache PUT: #{@table}:#{uuid}")
     :ok

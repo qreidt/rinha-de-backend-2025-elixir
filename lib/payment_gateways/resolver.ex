@@ -2,11 +2,11 @@ defmodule PaymentGateways.Resolver do
   use GenServer
 
   @main_table :gateway_resolver
-  @health_check_interval :timer.seconds(1)
+  @health_check_interval 25000 # ms
 
   @hosts [
-    {:gateway_a, "http://127.0.0.1:8000", 1.0},
-    {:gateway_b, "http://127.0.0.1:8001", 2.0},
+    {:default, "http://127.0.0.1:8001"},
+    {:fallback, "http://127.0.0.1:8002"},
   ]
 
 
@@ -24,8 +24,8 @@ defmodule PaymentGateways.Resolver do
 
   @impl true
   def handle_info(:health_check, state) do
-    check_health()
     schedule_health_check()
+    check_health()
     {:noreply, state}
   end
 
@@ -34,7 +34,7 @@ defmodule PaymentGateways.Resolver do
     :ets.new(@main_table, [:named_table, :set, :public, read_concurrency: true, write_concurrency: true])
 
     # Store the initial gateway (default to the first one)
-    [{gateway, url, _weight} | _] = @hosts
+    [{gateway, url} | _] = @hosts
 
     :ets.insert(@main_table, {:current_gateway, {gateway, url}})
 
@@ -65,7 +65,8 @@ defmodule PaymentGateways.Resolver do
 
   defp check_health() do
     [gateway | _] = @hosts
-    {id, base_url, _weight} = gateway
+    {_id, base_url} = gateway
+
     PaymentGateway.Client.service_health(base_url)
   end
 end

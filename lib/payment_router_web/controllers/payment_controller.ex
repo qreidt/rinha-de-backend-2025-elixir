@@ -7,7 +7,7 @@ defmodule PaymentRouterWeb.PaymentController do
   action_fallback PaymentRouterWeb.FallbackController
 
   def index(conn, _params) do
-    payments = Payments.list_payments()
+    payments = Payments.list_accepted_payments()
     render(conn, :index, payments: payments)
   end
 
@@ -17,7 +17,7 @@ defmodule PaymentRouterWeb.PaymentController do
       amount: data["amount"]
     }
 
-    case Payments.create_payment(payment_params) do
+    case Payments.create_accepted_payment(payment_params) do
       # Payment already exists from cache
       {:cached, payment} ->
         conn
@@ -32,5 +32,10 @@ defmodule PaymentRouterWeb.PaymentController do
 
       error -> error
     end
+  end
+
+  def purge(conn, _data) do
+    Payments.delete_all()
+    send_resp(conn, 200, "")
   end
 end

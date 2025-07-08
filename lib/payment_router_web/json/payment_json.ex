@@ -1,5 +1,5 @@
 defmodule PaymentRouterWeb.PaymentJSON do
-  alias PaymentRouter.Payments.Payment
+  alias PaymentRouter.Payments.AcceptedPayment
 
   @doc """
   Renders a list of payments.
@@ -15,7 +15,7 @@ defmodule PaymentRouterWeb.PaymentJSON do
     data(payment)
   end
 
-  defp data(%Payment{} = payment) do
+  defp data(%AcceptedPayment{} = payment) do
     %{
       correlationId: payment.uuid,
       amount: payment.amount
