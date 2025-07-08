@@ -93,14 +93,18 @@ end
 
   @spec get_summary(DateTime.t() | nil, DateTime.t() | nil) :: map()
   def get_summary(filter_start \\ nil, filter_end \\ nil) do
+
+    filters = true
+    filters = if filter_start, do: dynamic([p], p.created_at >= ^filter_start), else: filters
+    filters = if filter_end, do: dynamic([p], ^filters and p.created_at <= ^filter_end), else: filters
+
     query =
       from p in ProcessedPayment,
         group_by: p.gateway,
-        select: {p.gateway, count(p.uuid), sum(p.amount)}
+        select: {p.gateway, count(p.uuid), sum(p.amount)},
+        where: ^filters
 
-    if filter_start, do: ^query = where(query, [p], p.created_at >= ^filter_start)
-    if filter_end, do: ^query = where(query, [p], p.created_at <= ^filter_end)
-
+    IO.inspect(query)
     Repo.all(query)
     |> Enum.reduce(base_summary(), fn
       {0, total_requests, total_amount}, acc ->
