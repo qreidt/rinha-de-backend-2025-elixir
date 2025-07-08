@@ -21,4 +21,8 @@ defmodule PaymentRouterWeb.PaymentJSON do
       amount: payment.amount
     }
   end
+
+  def summary(%{summary: summary}) do
+    summary
+  end
 end

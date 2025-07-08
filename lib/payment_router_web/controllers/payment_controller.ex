@@ -6,9 +6,23 @@ defmodule PaymentRouterWeb.PaymentController do
 
   action_fallback PaymentRouterWeb.FallbackController
 
-  def index(conn, _params) do
-    payments = Payments.list_accepted_payments()
-    render(conn, :index, payments: payments)
+  def index(conn, params) do
+    filter_start = read_datetime_filter(params, "from")
+    filter_end = read_datetime_filter(params, "to")
+
+    summary = Payments.get_summary(filter_start, filter_end)
+    render(conn, :summary, summary: summary)
+  end
+
+  defp read_datetime_filter(query_params, key) do
+    case Map.get(query_params, key) do
+      nil -> nil
+      from_str ->
+        case DateTime.from_iso8601(from_str) do
+          {:ok, dt, _offset} -> dt
+          _ -> nil
+        end
+    end
   end
 
   def create(conn, data) do

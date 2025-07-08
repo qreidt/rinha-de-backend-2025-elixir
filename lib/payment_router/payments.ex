@@ -4,6 +4,7 @@ defmodule PaymentRouter.Payments do
   """
 
   import Ecto.Query, warn: false
+  alias PaymentRouter.Payments.ProcessedPayment
   alias PaymentRouter.Repo
 
   alias PaymentRouter.Payments.AcceptedPayment
@@ -87,6 +88,45 @@ end
   def delete_all() do
     Repo.delete_all(AcceptedPayment)
   end
+
+  ## Processed Payments
+
+  @spec get_summary(DateTime.t() | nil, DateTime.t() | nil) :: map()
+  def get_summary(filter_start \\ nil, filter_end \\ nil) do
+    query =
+      from p in ProcessedPayment,
+        group_by: p.gateway,
+        select: {p.gateway, count(p.uuid), sum(p.amount)}
+
+    if filter_start, do: ^query = where(query, [p], p.created_at >= ^filter_start)
+    if filter_end, do: ^query = where(query, [p], p.created_at <= ^filter_end)
+
+    Repo.all(query)
+    |> Enum.reduce(base_summary(), fn
+      {0, total_requests, total_amount}, acc ->
+        Map.put(acc, "default", %{
+          "totalRequests" => total_requests,
+          "totalAmount" => Decimal.to_float(total_amount || Decimal.new(0))
+        })
+
+      {1, total_requests, total_amount}, acc ->
+        Map.put(acc, "fallback", %{
+          "totalRequests" => total_requests,
+          "totalAmount" => Decimal.to_float(total_amount || Decimal.new(0))
+        })
+
+      _, acc -> acc
+    end)
+  end
+
+  defp base_summary() do
+    empty_gateway_values = %{"totalRequests" => 0, "totalAmount" => 0}
+    %{"default" => empty_gateway_values, "fallback" => empty_gateway_values}
+  end
+
+
+
+
 
   ## Deps
 
