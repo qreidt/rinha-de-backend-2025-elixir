@@ -50,6 +50,6 @@ defmodule PaymentRouterWeb.PaymentController do
 
   def purge(conn, _data) do
     Payments.delete_all()
-    send_resp(conn, 204, "")
+    send_resp(conn, 200, "")
   end
 end

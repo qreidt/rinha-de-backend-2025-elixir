@@ -8,7 +8,7 @@ config :payment_router, PaymentRouter.Repo,
   database: "payment_router_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 2
+  pool_size: 40
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -53,7 +53,8 @@ config :payment_router, PaymentRouterWeb.Endpoint,
 config :payment_router, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console, format: "[$level] $message\n",
+ level: :info
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

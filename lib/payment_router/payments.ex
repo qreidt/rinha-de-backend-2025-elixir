@@ -21,6 +21,22 @@ defmodule PaymentRouter.Payments do
     Repo.all(Payment)
   end
 
+  def get_pending_payments(limit \\ 12, timeout_time \\ 30) do
+    timeout_cutoff =
+      DateTime.utc_now()
+      |> DateTime.add(-timeout_time)
+
+    query =
+      from p in Payment,
+        where:
+          is_nil(p.gateway_id) and
+            (p.retries == 0
+             or (p.retries > 0 and p.updated_at < ^timeout_cutoff)),
+        limit: ^limit
+
+    Repo.all(query)
+  end
+
   @doc """
   Gets a single payment.
 
@@ -52,12 +68,14 @@ defmodule PaymentRouter.Payments do
 
   """
   def payment_exists?(nil), do: false
+
   def payment_exists?(uuid) do
     case PaymentRouter.PaymentsCache.get(uuid) do
-      {:ok, _} -> true
+      {:ok, _} ->
+        true
 
       :not_found ->
-        Repo.exists?((where(Payment, [uuid: ^uuid])))
+        Repo.exists?(where(Payment, uuid: ^uuid))
     end
   end
 
@@ -76,15 +94,12 @@ defmodule PaymentRouter.Payments do
   def create_payment(attrs \\ %{}) do
     uuid = Map.get(attrs, :uuid)
 
-    if payment_exists?(uuid) do
-      :found
-    else
-      insert_payment(attrs)
-    end
+    if payment_exists?(uuid), do: :found, else: insert_payment(attrs)
   end
 
   defp insert_payment(attrs) do
-    result = %Payment{}
+    result =
+      %Payment{}
       |> Payment.changeset(attrs)
       |> Repo.insert()
 
@@ -102,15 +117,16 @@ defmodule PaymentRouter.Payments do
 
   @spec get_summary(DateTime.t() | nil, DateTime.t() | nil) :: map()
   def get_summary(filter_start \\ nil, filter_end \\ nil) do
-
     filters = true
-    filters = if filter_start, do: dynamic([p], p.created_at >= ^filter_start), else: filters
-    filters = if filter_end, do: dynamic([p], ^filters and p.created_at <= ^filter_end), else: filters
+    filters = if filter_start, do: dynamic([p], p.inserted_at >= ^filter_start), else: filters
+
+    filters =
+      if filter_end, do: dynamic([p], ^filters and p.inserted_at <= ^filter_end), else: filters
 
     query =
       from p in Payment,
-        group_by: p.gateway,
-        select: {p.gateway, count(p.uuid), sum(p.amount)},
+        group_by: p.gateway_id,
+        select: {p.gateway_id, count(p.uuid), sum(p.amount)},
         where: ^filters
 
     Repo.all(query)
@@ -127,7 +143,8 @@ defmodule PaymentRouter.Payments do
           "totalAmount" => Decimal.to_float(total_amount || Decimal.new(0))
         })
 
-      _, acc -> acc
+      _, acc ->
+        acc
     end)
   end
 
@@ -136,9 +153,10 @@ defmodule PaymentRouter.Payments do
     %{"default" => empty_gateway_values, "fallback" => empty_gateway_values}
   end
 
-
-
-
+  def update_payment(%Payment{} = payment, attrs \\ %{}) do
+    Payment.changeset(payment, attrs)
+    |> Repo.update()
+  end
 
   ## Deps
 

@@ -1,12 +1,13 @@
 defmodule PaymentGateways.Resolver do
+  require Logger
   use GenServer
 
   @main_table :gateway_resolver
   @health_check_interval 10000 # ms
 
   @hosts [
-    {:default, "http://127.0.0.1:8001"},
-    {:fallback, "http://127.0.0.1:8002"},
+    {0, "http://127.0.0.1:8001"},
+    {1, "http://127.0.0.1:8002"},
   ]
 
 
@@ -16,8 +17,12 @@ defmodule PaymentGateways.Resolver do
 
   @impl true
   def init(_state) do
+    Logger.info("[PaymentGateways.Resolver] starting.")
+
     create_ets_tables()
     schedule_health_check()
+
+    Logger.info("[PaymentGateways.Resolver] started.")
 
     {:ok, %{}}
   end
@@ -34,9 +39,9 @@ defmodule PaymentGateways.Resolver do
     :ets.new(@main_table, [:named_table, :set, :public, read_concurrency: true, write_concurrency: true])
 
     # Store the initial gateway (default to the first one)
-    [{gateway, url} | _] = @hosts
+    [{gateway_id, url} | _] = @hosts
 
-    :ets.insert(@main_table, {:current_gateway, {gateway, url}})
+    :ets.insert(@main_table, {:current_gateway, {gateway_id, url}})
 
     :ok
   end

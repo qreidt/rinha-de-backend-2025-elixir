@@ -12,10 +12,13 @@ defmodule PaymentGateway.Client do
   Registers a new transaction by sending a POST request to /payments.
   """
   def register_transaction(base_url, transaction_params) do
+    Logger.info("[PaymentGateway.Client] >>> #{transaction_params.correlationId}")
     headers = [{"Content-Type", "application/json"}]
     body = Jason.encode!(transaction_params)
+
     case http_client().post(base_url <> @payments_path, body, headers) do
-        {:ok, %{status_code: 201, body: body}} ->
+        {:ok, %{status_code: 200, body: body}} ->
+          Logger.info("[PaymentGateway.Client] <<< #{body}")
           {:ok, Jason.decode!(body)}
 
         {:ok, %{status_code: code, body: body}} ->
@@ -33,15 +36,15 @@ defmodule PaymentGateway.Client do
     case http_client().get(base_url <> @healthcheck_path) do
 
       {:ok, %{status_code: 200}} ->
-        Logger.info("Payment service is healthy.")
+        Logger.info("[#{base_url}] is healthy.")
         :ok
 
       {:ok, %{status_code: code}} ->
-        Logger.warning("Payment service health check failed: #{code}")
+        Logger.warning("[#{base_url}] Payment service health check failed: #{code}")
         :error
 
       {:error, reason} ->
-        Logger.error("Health check HTTP error: #{inspect(reason)}")
+        Logger.error("[#{base_url}] Health check HTTP error: #{inspect(reason)}")
         :error
     end
   end

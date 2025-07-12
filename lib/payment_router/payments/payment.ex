@@ -15,7 +15,7 @@ defmodule PaymentRouter.Payments.Payment do
   @doc false
   def changeset(payment, attrs) do
     payment
-    |> cast(attrs, [:uuid, :amount])
+    |> cast(attrs, [:uuid, :amount, :gateway_id])
     |> validate_required([:uuid, :amount])
   end
 end

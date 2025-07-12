@@ -6,7 +6,7 @@ defmodule PaymentRouter.PaymentsCache do
 
   @ttl_ms 10_000
   @cleanup_frequency_ms 60_000
-  @table :payments
+  @table :payments_cache
 
   # Client API
 
@@ -46,7 +46,7 @@ defmodule PaymentRouter.PaymentsCache do
   end
 
   def handle_info(:cleanup, state) do
-    # Logger.info("Running cache table cleanup: #{@table}")
+    Logger.info("Running cache table cleanup: #{@table}")
 
     cleanup_expired()
     schedule_cleanup()

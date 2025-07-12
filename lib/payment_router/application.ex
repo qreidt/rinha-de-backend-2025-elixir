@@ -14,10 +14,12 @@ defmodule PaymentRouter.Application do
       {Phoenix.PubSub, name: PaymentRouter.PubSub},
       # Start a worker by calling: PaymentRouter.Worker.start_link(arg)
       # {PaymentRouter.Worker, arg},
-      # Start to serve requests, typically the last entry
-      PaymentRouterWeb.Endpoint,
       PaymentRouter.PaymentsCache,
-      # PaymentGateways.Resolver,
+      PaymentGateways.Resolver,
+      PaymentGateways.QueueProcessor,
+
+      # Start to serve requests, typically the last entry
+      PaymentRouterWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
