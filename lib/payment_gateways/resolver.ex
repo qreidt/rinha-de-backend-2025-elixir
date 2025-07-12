@@ -2,7 +2,7 @@ defmodule PaymentGateways.Resolver do
   use GenServer
 
   @main_table :gateway_resolver
-  @health_check_interval 25000 # ms
+  @health_check_interval 10000 # ms
 
   @hosts [
     {:default, "http://127.0.0.1:8001"},

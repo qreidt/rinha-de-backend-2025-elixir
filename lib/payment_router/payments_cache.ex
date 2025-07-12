@@ -2,11 +2,11 @@ defmodule PaymentRouter.PaymentsCache do
   require Logger
   use GenServer
 
-  alias PaymentRouter.Payments.AcceptedPayment
+  alias PaymentRouter.Payments.Payment
 
   @ttl_ms 10_000
   @cleanup_frequency_ms 60_000
-  @table :payments_cache
+  @table :payments
 
   # Client API
 
@@ -26,8 +26,8 @@ defmodule PaymentRouter.PaymentsCache do
     end
   end
 
-  @spec put(String.t(), %AcceptedPayment{}) :: :ok
-  def put(uuid, %AcceptedPayment{} = payment) do
+  @spec put(String.t(), %Payment{}) :: :ok
+  def put(uuid, %Payment{} = payment) do
     :ets.insert(@table, {uuid, payment, now_ms()})
     Logger.info("Cache PUT: #{@table}:#{uuid}")
     :ok
@@ -37,7 +37,7 @@ defmodule PaymentRouter.PaymentsCache do
 
   def init(_) do
     # Create ETS table
-    :ets.new(@table, [:named_table, :set, :public, read_concurrency: true])
+    :ets.new(@table, [:named_table, :set, :public, read_concurrency: true, write_concurrency: true])
 
     # Start cleanup Routine
     schedule_cleanup()
@@ -46,7 +46,7 @@ defmodule PaymentRouter.PaymentsCache do
   end
 
   def handle_info(:cleanup, state) do
-    Logger.info("Running cache table cleanup: #{@table}")
+    # Logger.info("Running cache table cleanup: #{@table}")
 
     cleanup_expired()
     schedule_cleanup()

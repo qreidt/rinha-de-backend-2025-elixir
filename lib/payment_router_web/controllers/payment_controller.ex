@@ -31,17 +31,17 @@ defmodule PaymentRouterWeb.PaymentController do
       amount: data["amount"]
     }
 
-    case Payments.create_accepted_payment(payment_params) do
-      # Payment already exists from cache
-      {:cached, payment} ->
+    case Payments.create_payment(payment_params) do
+      # Payment already exists
+      :found ->
         conn
-        |> put_status(:ok)
-        |> render(:show, payment: payment)
+        |> put_status(:no_content)
+        |> text("")
 
       # New payment created
-      {:created, payment} ->
+      {:ok, payment} ->
         conn
-        |> put_status(:created)
+        |> put_status(:accepted)
         |> render(:show, payment: payment)
 
       error -> error
@@ -50,6 +50,6 @@ defmodule PaymentRouterWeb.PaymentController do
 
   def purge(conn, _data) do
     Payments.delete_all()
-    send_resp(conn, 200, "")
+    send_resp(conn, 204, "")
   end
 end

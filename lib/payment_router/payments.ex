@@ -4,10 +4,9 @@ defmodule PaymentRouter.Payments do
   """
 
   import Ecto.Query, warn: false
-  alias PaymentRouter.Payments.ProcessedPayment
-  alias PaymentRouter.Repo
 
-  alias PaymentRouter.Payments.AcceptedPayment
+  alias PaymentRouter.Repo
+  alias PaymentRouter.Payments.Payment
 
   @doc """
   Returns the list of payments.
@@ -15,81 +14,91 @@ defmodule PaymentRouter.Payments do
   ## Examples
 
       iex> list_payments()
-      [%AcceptedPayment{}, ...]
+      [%Payment{}, ...]
 
   """
-  def list_accepted_payments do
-    Repo.all(AcceptedPayment)
+  def list_payments do
+    Repo.all(Payment)
   end
 
   @doc """
   Gets a single payment.
 
-  Returns nil if the AcceptedPayment does not exist.
+  Returns nil if the Payment does not exist.
 
   ## Examples
 
-      iex> get_accepted_payment(123)
-      %AcceptedPayment{}
+      iex> get_payment("123")
+      {:ok, %Payment{}}
 
-      iex> get_accepted_payment(456)
+      iex> get_payment("456")
       ** (nil)
 
   """
-  def get_accepted_payment(uuid) do
-  case PaymentRouter.PaymentsCache.get(uuid) do
-    {:ok, payment} -> payment
-
-    :not_found ->
-      payment = Repo.get(AcceptedPayment, uuid)
-      cache_service = get_cache_service()
-      if payment, do: cache_service.put(uuid, payment)
-      payment
+  def get_payment(uuid) do
+    Repo.get(Payment, uuid)
   end
-end
+
+  @doc """
+  Checks if a payment already exists.
+
+  ## Examples
+
+      iex> payment_exists?("123")
+      true
+
+      iex> payment_exists?("456")
+      false
+
+  """
+  def payment_exists?(nil), do: false
+  def payment_exists?(uuid) do
+    case PaymentRouter.PaymentsCache.get(uuid) do
+      {:ok, _} -> true
+
+      :not_found ->
+        Repo.exists?((where(Payment, [uuid: ^uuid])))
+    end
+  end
 
   @doc """
   Creates a payment.
 
   ## Examples
 
-      iex> create_accepted_payment(%{field: value})
-      {:ok, %AcceptedPayment{}}
+      iex> create_payment(%{field: value})
+      {:ok, %Payment{}}
 
-      iex> create_accepted_payment(%{field: bad_value})
+      iex> create_payment(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_accepted_payment(attrs \\ %{}) do
-    case get_payment_by_attrs(attrs) do
-      nil -> insert_accepted_payment(attrs)
-      payment -> {:cached, payment}
+  def create_payment(attrs \\ %{}) do
+    uuid = Map.get(attrs, :uuid)
+
+    if payment_exists?(uuid) do
+      :found
+    else
+      insert_payment(attrs)
     end
   end
 
-  defp get_payment_by_attrs(attrs) do
-    uuid = Map.get(attrs, :uuid)
-    if uuid, do: get_accepted_payment(uuid), else: nil
-  end
-
-  defp insert_accepted_payment(attrs) do
-    result = %AcceptedPayment{}
-      |> AcceptedPayment.changeset(attrs)
+  defp insert_payment(attrs) do
+    result = %Payment{}
+      |> Payment.changeset(attrs)
       |> Repo.insert()
 
-    with {:ok, %AcceptedPayment{} = payment} <- result do
+    with {:ok, %Payment{} = payment} <- result do
       cache_service = get_cache_service()
       cache_service.put(payment.uuid, payment)
 
-      {:created, payment}
+      {:ok, payment}
     end
   end
 
   def delete_all() do
-    Repo.delete_all(AcceptedPayment)
+    Repo.delete_all(Payment)
   end
-
-  ## Processed Payments
 
   @spec get_summary(DateTime.t() | nil, DateTime.t() | nil) :: map()
   def get_summary(filter_start \\ nil, filter_end \\ nil) do
@@ -99,12 +108,11 @@ end
     filters = if filter_end, do: dynamic([p], ^filters and p.created_at <= ^filter_end), else: filters
 
     query =
-      from p in ProcessedPayment,
+      from p in Payment,
         group_by: p.gateway,
         select: {p.gateway, count(p.uuid), sum(p.amount)},
         where: ^filters
 
-    IO.inspect(query)
     Repo.all(query)
     |> Enum.reduce(base_summary(), fn
       {0, total_requests, total_amount}, acc ->

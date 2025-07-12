@@ -1,13 +1,15 @@
-defmodule PaymentRouter.Payments.AcceptedPayment do
+defmodule PaymentRouter.Payments.Payment do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:uuid, :binary_id, autogenerate: false}
 
-  schema "accepted_payments" do
+  schema "payments" do
     field :amount, :decimal
     field :retries, :integer
-    field :created_at, :utc_datetime_usec
+    field :gateway_id, :integer
+
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

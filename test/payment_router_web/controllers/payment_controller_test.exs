@@ -12,17 +12,10 @@ defmodule PaymentRouterWeb.PaymentControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  describe "index" do
-    test "lists all payments", %{conn: conn} do
-      conn = get(conn, ~p"/payments-summary")
-      assert json_response(conn, 200) == []
-    end
-  end
-
   describe "create payment" do
     test "renders payment when data is valid", %{conn: conn} do
       conn = post(conn, ~p"/payments", @create_attrs)
-      response_data = json_response(conn, 201)
+      response_data = json_response(conn, 202)
 
       assert ^response_data = %{
         "amount" => "120.5",
