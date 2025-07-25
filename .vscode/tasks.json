@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Run Phoenix Release (foreground)",
+			"command": ".elixir_ls\\debug_adapter\\build\\prod\\rel\\payment_router\\bin\\server.bat foreground",
+			"group": "build",
+			"isBackground": false,
+			"args": [],
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"MIX_ENV": "prod",
+					"PORT": "9999",
+					"SECRET_KEY_BASE": "VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg",
+					"DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/payment_router_dev"
+				}
+			}
+		}
+	]
+}
