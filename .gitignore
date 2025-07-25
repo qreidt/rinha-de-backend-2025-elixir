@@ -27,3 +27,5 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 payment_router-*.tar
 
+report.html
+
