@@ -10,7 +10,7 @@ defmodule PaymentGateways.QueueProcessor do
 
   @tick_interval 5000
   @timeout_time 20_000
-  @page_size 32
+  @page_size 1
 
   def start_link(_opts) do
     Payments.delete_all()

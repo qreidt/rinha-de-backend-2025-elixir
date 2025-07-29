@@ -41,7 +41,7 @@ defmodule PaymentRouterWeb.PaymentController do
       # New payment created
       {:ok, payment} ->
         conn
-        |> put_status(:accepted)
+        |> put_status(:created)
         |> render(:show, payment: payment)
 
       error -> error
