@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :payment_router, PaymentRouterWeb.Endpoint, server: true
 end
 
+if System.get_env("PHX_WORKER") do
+  config :payment_router, enabled_workers: true
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -60,7 +64,7 @@ if config_env() == :prod do
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
       # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {127, 0, 0, 1},
+      ip: :any,
       port: port
     ],
     secret_key_base: secret_key_base
@@ -97,3 +101,8 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 end
+
+config :payment_router, PaymentGateways.Resolver, hosts: Enum.with_index(
+  String.split(System.get_env("GATEWAY_HOSTS", "http://127.0.0.1:8001,http://127.0.0.1:8002"), ","),
+  fn host, i -> {i, host} end
+)

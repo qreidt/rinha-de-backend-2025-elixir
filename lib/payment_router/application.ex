@@ -14,13 +14,22 @@ defmodule PaymentRouter.Application do
       {Phoenix.PubSub, name: PaymentRouter.PubSub},
       # Start a worker by calling: PaymentRouter.Worker.start_link(arg)
       # {PaymentRouter.Worker, arg},
-      PaymentRouter.PaymentsCache,
-      PaymentGateways.Resolver,
-      PaymentGateways.QueueProcessor,
 
-      # Start to serve requests, typically the last entry
-      PaymentRouterWeb.Endpoint
+      PaymentRouter.PaymentsCache,
     ]
+
+    # Add Workers
+    children = if Application.get_env(:payment_router, :enabled_workers, false) do
+      children ++ [
+        PaymentGateways.Resolver,
+        PaymentGateways.QueueProcessor,
+      ]
+    else
+      children
+    end
+
+    # Start to serve requests, typically the last entry
+    children = children ++ [PaymentRouterWeb.Endpoint]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

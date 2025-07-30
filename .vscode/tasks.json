@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "Run Phoenix Release",
+			"label": "Run Server",
 			"command": "_build/prod/rel/payment_router/bin/payment_router start",
 			"isBackground": false,
 			"args": [],
@@ -15,6 +15,23 @@
 					"PORT": "9999",
 					"SECRET_KEY_BASE": "VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg",
 					"DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/payment_router_dev"
+				}
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Run Worker",
+			"command": "_build/prod/rel/payment_router/bin/payment_router start",
+			"isBackground": false,
+			"args": [],
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"PHX_WORKER": "1",
+					"MIX_ENV": "prod",
+					"PORT": "9999",
+					"SECRET_KEY_BASE": "VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg",
+					"DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/payment_router"
 				}
 			}
 		},
@@ -43,7 +60,6 @@
 			"problemMatcher": [],
 			"options": {
 				"env": {
-					"MAX_REQUESTS": "1",
 					"K6_WEB_DASHBOARD": "true",
 					"K6_WEB_DASHBOARD_PORT": "5665",
 					"K6_WEB_DASHBOARD_PERIOD": "2s",

@@ -11,6 +11,13 @@ defmodule PaymentRouterWeb.PaymentController do
     filter_end = read_datetime_filter(params, "to")
 
     summary = Payments.get_summary(filter_start, filter_end)
+
+    Logger.info("Summary: " <> Jason.encode!(%{
+      filter_start: filter_start,
+      filter_end: filter_end,
+      summary: summary
+    }))
+
     render(conn, :summary, summary: summary)
   end
 

@@ -5,10 +5,9 @@ defmodule PaymentGateways.Resolver do
   @main_table :gateway_resolver
   @health_check_interval 10000 # ms
 
-  @hosts [
-    {0, "http://127.0.0.1:8001"},
-    {1, "http://127.0.0.1:8002"},
-  ]
+  def hosts do
+    Application.get_env(:payment_router, PaymentGateways.Resolver)[:hosts]
+  end
 
 
   def start_link(_opts) do
@@ -39,7 +38,7 @@ defmodule PaymentGateways.Resolver do
     :ets.new(@main_table, [:named_table, :set, :public, read_concurrency: true, write_concurrency: true])
 
     # Store the initial gateway (default to the first one)
-    [{gateway_id, url} | _] = @hosts
+    [{gateway_id, url} | _] = hosts()
 
     :ets.insert(@main_table, {:current_gateway, {gateway_id, url}})
 
@@ -69,7 +68,7 @@ defmodule PaymentGateways.Resolver do
   end
 
   defp check_health() do
-    [gateway | _] = @hosts
+    [gateway | _] = hosts()
     {_id, base_url} = gateway
 
     PaymentGateway.Client.service_health(base_url)

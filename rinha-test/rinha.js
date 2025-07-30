@@ -213,6 +213,18 @@ export async function checkPayments() {
   );
   const backendPaymentsSummary = await getBackendPaymentsSummary(from, to);
 
+  console.log({
+    message: 'Inconsistências',
+    default: {
+      backend: backendPaymentsSummary.default.totalAmount,
+      gateway: defaultAdminPaymentsSummary.totalAmount,
+    },
+    fallback: {
+      backend: backendPaymentsSummary.fallback.totalAmount,
+      gateway: fallbackAdminPaymentsSummary.totalAmount
+    }
+  });
+
   const inconsistencies =
     Math.abs(
       backendPaymentsSummary.default.totalAmount -

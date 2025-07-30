@@ -10,7 +10,7 @@ defmodule PaymentGateways.QueueProcessor do
 
   @tick_interval 5000
   @timeout_time 20_000
-  @page_size 1
+  @page_size 16
 
   def start_link(_opts) do
     Payments.delete_all()
@@ -32,7 +32,7 @@ defmodule PaymentGateways.QueueProcessor do
 
   @impl true
   def handle_info(:tick, state) do
-
+    Logger.info("[PaymentGateways.QueueProcessor] tick")
     handle()
 
     setup_tick()
@@ -41,6 +41,8 @@ defmodule PaymentGateways.QueueProcessor do
 
   defp handle() do
     payments = get_payments()
+    Logger.info("[PaymentGateways.QueueProcessor] payments found: #{Enum.count(payments)}")
+
     if Enum.count(payments) > 0 do
       dispatch_payments(payments)
       handle()
