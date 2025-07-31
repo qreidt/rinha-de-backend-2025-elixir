@@ -38,7 +38,7 @@
 		{
 			"type": "shell",
 			"label": "Mix Release (production)",
-			"command": "mix release",
+			"command": "mix release --overwrite",
 			"group": "build",
 			"isBackground": false,
 			"args": [],
@@ -60,6 +60,7 @@
 			"problemMatcher": [],
 			"options": {
 				"env": {
+					"MAX_REQUESTS": "500",
 					"K6_WEB_DASHBOARD": "true",
 					"K6_WEB_DASHBOARD_PORT": "5665",
 					"K6_WEB_DASHBOARD_PERIOD": "2s",

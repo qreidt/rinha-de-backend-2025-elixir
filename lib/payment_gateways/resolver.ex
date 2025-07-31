@@ -3,12 +3,11 @@ defmodule PaymentGateways.Resolver do
   use GenServer
 
   @main_table :gateway_resolver
-  @health_check_interval 10000 # ms
+  @health_check_interval 5000
 
   def hosts do
     Application.get_env(:payment_router, PaymentGateways.Resolver)[:hosts]
   end
-
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -35,12 +34,18 @@ defmodule PaymentGateways.Resolver do
 
   defp create_ets_tables() do
     # Create ETS table for storing the current gateway
-    :ets.new(@main_table, [:named_table, :set, :public, read_concurrency: true, write_concurrency: true])
+    :ets.new(@main_table, [
+      :named_table,
+      :set,
+      :public,
+      read_concurrency: true,
+      write_concurrency: true
+    ])
 
     # Store the initial gateway (default to the first one)
-    [{gateway_id, url} | _] = hosts()
+    gateway = get_prefered_gateway()
 
-    :ets.insert(@main_table, {:current_gateway, {gateway_id, url}})
+    :ets.insert(@main_table, {:current_gateway, gateway})
 
     :ok
   end
@@ -68,9 +73,33 @@ defmodule PaymentGateways.Resolver do
   end
 
   defp check_health() do
-    [gateway | _] = hosts()
-    {_id, base_url} = gateway
+    prefered_gateway = get_prefered_gateway()
+    set_current_gateway(prefered_gateway)
+  end
 
-    PaymentGateway.Client.service_health(base_url)
+  defp get_prefered_gateway() do
+    filtered_gateways =
+      hosts()
+      |> run_async_task()
+      |> Enum.filter(fn {_id, _url, failing?, _response_time} -> !failing? end)
+
+    if Enum.count(filtered_gateways) == 0, do: nil, else: List.first(filtered_gateways)
+  end
+
+  defp run_async_task(hosts) do
+    hosts
+    |> Enum.map(fn host -> Task.async(fn -> handle_async_task(host) end) end)
+    |> Task.await_many()
+    |> Enum.filter(fn v -> v != :error end)
+  end
+
+  defp handle_async_task({id, base_url}) do
+    with {:ok, failing?, min_response_time} <- PaymentGateway.Client.service_health(base_url) do
+      Logger.info("[PaymentGateways.Resolver][#{base_url}][#{failing?}][#{min_response_time} ms]")
+      if failing? or min_response_time > 0 do
+        Logger.warning("[PaymentGateways.Resolver][#{base_url}][#{failing?}][#{min_response_time} ms]")
+      end
+      {id, base_url, failing?, min_response_time}
+    end
   end
 end

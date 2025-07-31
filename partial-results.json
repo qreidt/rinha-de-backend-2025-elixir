@@ -1,13 +1,13 @@
 {
   "participante": "anonymous",
-  "total_liquido": 306958.84324240516,
-  "total_bruto": 285107.3,
-  "total_taxas": 14255.365,
+  "total_liquido": 307242.0350407738,
+  "total_bruto": 302082,
+  "total_taxas": 18998.530000000002,
   "descricao": "'total_liquido' é sua pontuação final. Equivale ao seu lucro. Fórmula: total_liquido + (total_liquido * p99.bonus) - (total_liquido * multa.porcentagem)",
   "p99": {
-    "valor": "4.334567049999998ms",
-    "bonus": 0.13330865900000005,
-    "max_requests": 500,
+    "valor": "6.732960839999976ms",
+    "bonus": 0.08534078320000049,
+    "max_requests": "500",
     "descricao": "Fórmula para o bônus: max((11 - p99.valor) * 0.02, 0)"
   },
   "multa": {
@@ -19,26 +19,26 @@
     }
   },
   "lag": {
-    "num_pagamentos_total": 14327,
-    "num_pagamentos_solicitados": 15204,
-    "lag": 877,
+    "num_pagamentos_total": 15180,
+    "num_pagamentos_solicitados": 15180,
+    "lag": 0,
     "descricao": "Lag é a diferença entre a quantidade de solicitações de pagamentos vs o que foi realmente computado pelo backend. Mostra a perda de pagamentos possivelmente por estarem enfileirados."
   },
   "pagamentos_solicitados": {
-    "qtd_sucesso": 15204,
+    "qtd_sucesso": 15180,
     "qtd_falha": 0,
     "descricao": "'qtd_sucesso' foram requests bem sucedidos para 'POST /payments' e 'qtd_falha' os requests com erro."
   },
   "pagamentos_realizados_default": {
-    "total_bruto": 285107.3,
-    "num_pagamentos": 14327,
-    "total_taxas": 14255.365,
+    "total_bruto": 263137.7,
+    "num_pagamentos": 13223,
+    "total_taxas": 13156.885000000002,
     "descricao": "Informações do backend sobre solicitações de pagamento para o Payment Processor Default."
   },
   "pagamentos_realizados_fallback": {
-    "total_bruto": 0,
-    "num_pagamentos": 0,
-    "total_taxas": 0,
+    "total_bruto": 38944.3,
+    "num_pagamentos": 1957,
+    "total_taxas": 5841.645,
     "descricao": "Informações do backend sobre solicitações de pagamento para o Payment Processor Fallback."
   }
 }

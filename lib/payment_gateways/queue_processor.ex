@@ -8,9 +8,9 @@ defmodule PaymentGateways.QueueProcessor do
   alias PaymentRouter.Payments.Payment
 
 
-  @tick_interval 5000
+  @tick_interval 1000
   @timeout_time 20_000
-  @page_size 16
+  @page_size 128
 
   def start_link(_opts) do
     Payments.delete_all()
@@ -32,7 +32,6 @@ defmodule PaymentGateways.QueueProcessor do
 
   @impl true
   def handle_info(:tick, state) do
-    Logger.info("[PaymentGateways.QueueProcessor] tick")
     handle()
 
     setup_tick()
@@ -40,12 +39,18 @@ defmodule PaymentGateways.QueueProcessor do
   end
 
   defp handle() do
-    payments = get_payments()
-    Logger.info("[PaymentGateways.QueueProcessor] payments found: #{Enum.count(payments)}")
+    case Resolver.current_gateway() do
+      {id, base_url, _, _} ->
+        payments = get_payments()
+        Logger.info("[PaymentGateways.QueueProcessor] payments found: #{Enum.count(payments)}")
 
-    if Enum.count(payments) > 0 do
-      dispatch_payments(payments)
-      handle()
+        if Enum.count(payments) > 0 do
+          dispatch_payments(payments, {id, base_url})
+          handle()
+        end
+
+      _ ->
+        Logger.warning("[PaymentGateways.QueueProcessor] Skipping batch due to no available gateways.")
     end
   end
 
@@ -55,19 +60,18 @@ defmodule PaymentGateways.QueueProcessor do
   end
 
   # Send each payment asynchronously
-  defp dispatch_payments(payments) do
+  defp dispatch_payments(payments, gateway) do
     Enum.map(payments, fn payment ->
       Task.async(fn ->
-        send_payment(payment)
+        send_payment(payment, gateway)
       end)
     end)
-    |> Task.await_many()
+    |> Task.await_many(10000)
   end
 
   # Send payment using the gateway client
-  defp send_payment(%Payment{} = payment) do
+  defp send_payment(%Payment{} = payment, {gateway_id, base_url}) do
     Logger.info("[PaymentGateways.QueueProcessor] Sending payment #{payment.uuid}")
-    {gateway_id, base_url} = Resolver.current_gateway()
 
     params = %{
       correlationId: payment.uuid,
