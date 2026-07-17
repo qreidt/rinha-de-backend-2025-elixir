@@ -42,60 +42,73 @@ services:
     restart: unless-stopped
     environment:
       - PHX_SERVER=1
+      - MIX_ENV=prod
       - PHX_HOST=0.0.0.0
       - PORT=9999
-      - MIX_ENV=prod
       - SECRET_KEY_BASE=VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/payment_router
+      - RELEASE_DISTRIBUTION=name
+      - RELEASE_COOKIE=supersecretcookie1234567890
+      - RELEASE_NODE=api01@api01.rinha
+      - DNS_CLUSTER_QUERY=api.rinha
     depends_on:
       - db
     networks:
-      - rinha
+      rinha:
+        aliases:
+          - api01.rinha
+          - api.rinha
     deploy:
       resources:
         limits:
-          cpus: "0.7"
-          memory: "150MB"
+          cpus: "1.5"
+          memory: "500MB"
 
   api02:
+    build: .
     image: qreidt/rinha-payment-router:latest
     restart: unless-stopped
     environment:
       - PHX_SERVER=1
+      - MIX_ENV=prod
       - PHX_HOST=0.0.0.0
       - PORT=9999
-      - MIX_ENV=prod
       - SECRET_KEY_BASE=VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/payment_router
+      - RELEASE_DISTRIBUTION=name
+      - RELEASE_COOKIE=supersecretcookie1234567890
+      - RELEASE_NODE=api02@api02.rinha
+      - DNS_CLUSTER_QUERY=api.rinha
     depends_on:
       - db
     networks:
-      - rinha
+      rinha:
+        aliases:
+          - api02.rinha
+          - api.rinha
     deploy:
       resources:
         limits:
           cpus: "1.5"
           memory: "500MB"
 
-  worker:
-    image: qreidt/rinha-payment-router:latest
-    restart: unless-stopped
-    environment:
-      - PHX_WORKER=1
-      - MIX_ENV=prod
-      - SECRET_KEY_BASE=VKkFu4cjaSJOahHXWUq1LVDcvBfzdWv8zEtfBkb1jYQkTTOCMOBU+FTV2/uiyltg
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/payment_router
-      - GATEWAY_HOSTS=http://payment-processor-default:8080,http://payment-processor-fallback:8080
-    depends_on:
-      - db
-    networks:
-      - rinha
-      - payment-processor
-    deploy:
-      resources:
-        limits:
-          cpus: "1.5"
-          memory: "500MB"
+  # worker:
+  #   image: qreidt/rinha-payment-router:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - PHX_WORKER=1
+  #     - GATEWAY_HOSTS=http://payment-processor-default:8080,http://payment-processor-fallback:8080
+  #     - RELEASE_NODE=worker@worker
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - rinha
+  #     - payment-processor
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "1.5"
+  #         memory: "500MB"
 
 networks:
   rinha:

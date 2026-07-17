@@ -48,8 +48,11 @@ WORKDIR /app
 # Copy release from build
 COPY --from=build /app/_build/prod/rel/payment_router ./_build/prod/rel/payment_router
 
+ENV RELEASE_COOKIE "supersecretcookie1234567890"
+
 # Expose HTTP port
 EXPOSE 9999
+EXPOSE 4369
 
 # Start Phoenix release
 CMD ["sh", "-c", "_build/prod/rel/payment_router/bin/payment_router start"]
